@@ -53,4 +53,6 @@ enum GameStates {
     WORM_GAME_QUIT,       // User likes to quit
 };
 
+extern int worm_main(void);
+
 #endif  // #define _WORM_H

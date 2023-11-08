@@ -1,8 +1,9 @@
 #include <cstdio>
 #include "rclcpp/rclcpp.hpp"
 
-extern "C" {
-extern int worm_main();
+extern "C" 
+{
+  extern int worm_main(void);
 }
 
 class WormTest : public rclcpp::Node {
