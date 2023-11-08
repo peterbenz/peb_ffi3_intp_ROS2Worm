@@ -21,6 +21,18 @@ add_executable(worm_test
 	src/worm.c
 )
 
+#add_executable(worm_display_node
+#  src/worm_display_node.cpp
+#)
+#
+#add_executable(worm_grid_node
+#  src/worm_grid_node.cpp
+#)
+#
+#add_executable(worm_navigation_node
+#  src/worm_navigation_node.cpp
+#)
+
 target_include_directories(worm_test
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -36,6 +48,9 @@ ament_target_dependencies(
 
 install(TARGETS 
   worm_test
+#  worm_display_node
+#  worm_navigation_node
+#  worm_grid_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
