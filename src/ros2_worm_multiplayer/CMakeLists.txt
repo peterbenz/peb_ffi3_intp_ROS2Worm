@@ -37,6 +37,12 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Direction.msg"
 )
 
+# Messages test - Peter
+rosidl_generate_interfaces(${PROJECT_NAME}
+	"msg/PlayerInput.msg"
+	"msg/Board.msg"
+)
+
 #######################################
 target_include_directories(worm_display_node
   PUBLIC
