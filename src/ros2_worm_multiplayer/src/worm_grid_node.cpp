@@ -8,7 +8,7 @@ Topics und Messages des Nodes:
 
   Publish:
     GameId auf Topic GameStart
-    Boarddatenstruktur auf Topic Board
+    Boarddatenstruktur auf Topic BoardInfo
 
   Subscribe:
     Spielereingabe auf Topic PlayerInput
@@ -24,19 +24,24 @@ Topics und Messages des Nodes:
       Response Args: status: bool oder int, playerId: int
 */
 
-static const auto GameStartTopic = "GameStart";
-
 class WormGridNode : public rclcpp::Node {
   public:
     WormGridNode() : Node("worm_grid_node"), count_(0) {
-      gameId_publisher_ = this->create_publisher<std_msgs::msg::String>(GameStartTopic, 10);
+      gameId_publisher_ = this->create_publisher<std_msgs::msg::Int32>(WormTopics::GameStart, WormConstants::GRID_MESSAGE_QUEUE_LENGTH);
       gameId_timer_ = this->create_wall_timer(WormConstants::TICK_TIME, std::bind(&WormGridNode::GameIdPublishCallback, this));
+
+      boardInfo_publisher_ = this->create_publisher<std_msgs::msg::Int32>(WormTopics::BoardInfo, WormConstants::GRID_MESSAGE_QUEUE_LENGTH);
+      boardInfo_timer_ = this->create_wall_timer(WormConstants::TICK_TIME, std::bind(&WormGridNode::BoardInfoPublishCallback, this));
+
+      playerInput_subscription_ = this->create_subscription<std_msgs::msg::String>(
+        WormTopics::PlayerInput, WormConstants::GRID_MESSAGE_QUEUE_LENGTH, std::bind(&WormGridNode::PlayerInputCallback, this, _1));
+      }
     }
 
   private:
     // callback methods for publishing
     void GameIdPublishCallback() {}
-    void BoardPublishCallback() {}
+    void BoardInfoPublishCallback() {}
 
     // callback methods for subscribing
     void PlayerInputCallback() {}
