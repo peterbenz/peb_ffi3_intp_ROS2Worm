@@ -5,8 +5,15 @@
 
 #include <chrono>
 
+/* Namespace for constants used in this project */
 namespace WormConstants 
 {
 constexpr std::chrono::milliseconds TICK_TIME{100};
+}
+
+/* Namespace for topics used in this project */
+namespace WormTopics
+{
+	constexpr const char* PlayerInput = "PlayerInput";
 }
 #endif
