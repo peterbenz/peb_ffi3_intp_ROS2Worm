@@ -15,5 +15,7 @@ constexpr std::chrono::milliseconds TICK_TIME{100};
 namespace WormTopics
 {
 	constexpr const char* PlayerInput = "PlayerInput";
+    constexpr const char* GameStart = "GameStart";
+    constexpr const char* BoardInfo = "BoardInfo";
 }
 #endif

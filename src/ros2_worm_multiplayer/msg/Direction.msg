@@ -1,2 +1,2 @@
-int8 dx
-int8 dy
+int32 dx
+int32 dy
