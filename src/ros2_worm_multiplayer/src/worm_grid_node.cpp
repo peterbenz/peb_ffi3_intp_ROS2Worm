@@ -1,12 +1,14 @@
 #include <cstdio>
+#include <chrono>
 #include "rclcpp/rclcpp.hpp"
+#include "constants.hpp"
 
 /*
-Topics ung Messages des Nodes:
+Topics und Messages des Nodes:
 
   Publish:
     GameId auf Topic GameStart
-    Boarddatenstruktur auf Topiv Board
+    Boarddatenstruktur auf Topic Board
 
   Subscribe:
     Spielereingabe auf Topic PlayerInput
@@ -22,10 +24,23 @@ Topics ung Messages des Nodes:
       Response Args: status: bool oder int, playerId: int
 */
 
+static const auto GameStartTopic = "GameStart";
+
 class WormGridNode : public rclcpp::Node {
   public:
-    WormGridNode() : Node("worm_grid_node") {
+    WormGridNode() : Node("worm_grid_node"), count_(0) {
+      gameId_publisher_ = this->create_publisher<std_msgs::msg::String>(GameStartTopic, 10);
+      gameId_timer_ = this->create_wall_timer(TICK_TIME, std::bind(&WormGridNode::GameIdPublishCallback, this));
     }
+
+  private:
+    // callback methods for publishing
+    void GameIdPublishCallback() {}
+    void BoardPublishCallback() {}
+
+    // callback methods for subscribing
+    void PlayerInputCallback() {}
+
 };
 
 int main(int argc, char ** argv)
