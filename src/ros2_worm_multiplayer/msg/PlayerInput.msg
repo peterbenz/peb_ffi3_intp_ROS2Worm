@@ -1,3 +1,2 @@
-int8 x
-int8 y
+Direction dir
 int8 WormID
