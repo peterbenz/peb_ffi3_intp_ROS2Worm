@@ -36,6 +36,7 @@ ament_target_dependencies(worm_navigation_node rclcpp ros2_worm_multiplayer)
 rosidl_generate_interfaces(${PROJECT_NAME}
 	"msg/PlayerInput.msg"
 	"msg/Board.msg"
+	"msg/Row.msg"
 	"msg/Element.msg"
 	"msg/Direction.msg"
 )
