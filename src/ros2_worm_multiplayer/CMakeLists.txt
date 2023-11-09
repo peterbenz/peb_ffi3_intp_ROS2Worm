@@ -52,5 +52,6 @@ install(TARGETS
 )
 
 target_link_libraries(worm_display_node ncurses)
+target_link_libraries(worm_navigation_node ncurses)
 
 ament_package()
