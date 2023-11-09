@@ -32,16 +32,12 @@ add_executable(worm_navigation_node
 )
 ament_target_dependencies(worm_navigation_node rclcpp ros2_worm_multiplayer)
 
-# Messages test - Joshi
-rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/Direction.msg"
-)
-
-# Messages test - Peter
+# Messages - Peter
 rosidl_generate_interfaces(${PROJECT_NAME}
 	"msg/PlayerInput.msg"
 	"msg/Board.msg"
 	"msg/Element.msg"
+	"msg/Direction.msg"
 )
 
 #######################################
