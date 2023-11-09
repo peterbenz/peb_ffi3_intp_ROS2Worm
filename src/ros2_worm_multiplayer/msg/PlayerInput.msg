@@ -1,2 +1,2 @@
 Direction dir
-int32 WormID
+int32 wormid

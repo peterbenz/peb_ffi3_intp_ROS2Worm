@@ -1,1 +1,1 @@
-Element board[][]
+Element[] board
