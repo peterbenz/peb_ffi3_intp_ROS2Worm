@@ -1,7 +1,7 @@
 #include <cstdio>
 #include <chrono>
 #include "rclcpp/rclcpp.hpp"
-#include "constants.hpp"
+#include "worm_constants.hpp"
 
 /*
 Topics und Messages des Nodes:
@@ -30,7 +30,7 @@ class WormGridNode : public rclcpp::Node {
   public:
     WormGridNode() : Node("worm_grid_node"), count_(0) {
       gameId_publisher_ = this->create_publisher<std_msgs::msg::String>(GameStartTopic, 10);
-      gameId_timer_ = this->create_wall_timer(TICK_TIME, std::bind(&WormGridNode::GameIdPublishCallback, this));
+      gameId_timer_ = this->create_wall_timer(WormConstants::TICK_TIME, std::bind(&WormGridNode::GameIdPublishCallback, this));
     }
 
   private:
