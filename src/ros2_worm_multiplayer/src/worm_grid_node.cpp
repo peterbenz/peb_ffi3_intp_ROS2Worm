@@ -24,7 +24,7 @@ Topics ung Messages des Nodes:
 
 class WormGridNode : public rclcpp::Node {
   public:
-    WormTest() : Node("worm_test") {
+    WormGridNode() : Node("worm_grid_node") {
     }
 };
 
