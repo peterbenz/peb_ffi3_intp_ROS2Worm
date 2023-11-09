@@ -35,7 +35,6 @@ class WormGridNode : public rclcpp::Node {
 
       playerInput_subscription_ = this->create_subscription<std_msgs::msg::String>(
         WormTopics::PlayerInput, WormConstants::GRID_MESSAGE_QUEUE_LENGTH, std::bind(&WormGridNode::PlayerInputCallback, this, _1));
-      }
     }
 
   private:
