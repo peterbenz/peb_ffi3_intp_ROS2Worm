@@ -41,6 +41,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 rosidl_generate_interfaces(${PROJECT_NAME}
 	"msg/PlayerInput.msg"
 	"msg/Board.msg"
+	"msg/Element.msg"
 )
 
 #######################################
