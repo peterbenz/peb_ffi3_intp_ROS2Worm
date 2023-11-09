@@ -1,6 +1,5 @@
 #include <cstdio>
 #include <curses.h>
-#include <termios.h>
 #include <cinttypes>
 #include "rclcpp/rclcpp.hpp"
 #include "ros2_worm_multiplayer/msg/direction.hpp"
