@@ -13,15 +13,19 @@ find_package(rclcpp REQUIRED)
 find_package(Curses REQUIRED)
 find_package(std_msgs REQUIRED) # only needed for testing purposes - mario
 find_package(rosidl_default_generators REQUIRED) # testing - Joschie
-find_package(ros2_worm_multiplayer REQUIRED)
+#find_package(ros2_worm_multiplayer REQUIRED)
+
+set(msg_files
+  "msg/PlayerInput.msg"
+  "msg/Board.msg"
+  "msg/Row.msg"
+  "msg/Element.msg"
+  "msg/Direction.msg"
+)
 
 # Messages - Peter
 rosidl_generate_interfaces(${PROJECT_NAME}
-	"msg/PlayerInput.msg"
-	"msg/Board.msg"
-	"msg/Row.msg"
-	"msg/Element.msg"
-	"msg/Direction.msg"
+	${msg_files}
 )
 
 # Display Node
@@ -39,7 +43,7 @@ ament_target_dependencies(worm_display_node rclcpp std_msgs)
 add_executable(worm_navigation_node
   src/worm_navigation_node.cpp
 )
-ament_target_dependencies(worm_navigation_node rclcpp ros2_worm_multiplayer)
+ament_target_dependencies(worm_navigation_node rclcpp)
 
 
 #######################################
@@ -56,6 +60,14 @@ install(TARGETS
   DESTINATION lib/${PROJECT_NAME}
 )
 
+# type support for custom msgs
+rosidl_get_typesupport_target(cpp_typesupport_target
+  ${PROJECT_NAME} rosidl_typesupport_cpp)
+
+# add your nodes here that require custom msg types
+target_link_libraries(worm_navigation_node "${cpp_typesupport_target}")
+
+# add your nodes here that require ncurses
 target_link_libraries(worm_display_node ncurses)
 target_link_libraries(worm_navigation_node ncurses)
 
