@@ -1,7 +1,11 @@
 #include <cstdio>
 #include <chrono>
 #include "rclcpp/rclcpp.hpp"
+#include "std_msgs/msg/int32.hpp"
+
 #include "worm_constants.hpp"
+#include "ros2_worm_multiplayer/msg/board.hpp"
+#include "ros2_worm_multiplayer/msg/direction.hpp"
 
 /*
 Topics und Messages des Nodes:
@@ -26,26 +30,51 @@ Topics und Messages des Nodes:
 
 class WormGridNode : public rclcpp::Node {
   public:
-    WormGridNode() : Node("worm_grid_node"), count_(0) {
-      gameId_publisher_ = this->create_publisher<std_msgs::msg::Int32>(WormTopics::GameStart, WormConstants::GRID_MESSAGE_QUEUE_LENGTH);
-      gameId_timer_ = this->create_wall_timer(WormConstants::TICK_TIME, std::bind(&WormGridNode::GameIdPublishCallback, this));
-
-      boardInfo_publisher_ = this->create_publisher<std_msgs::msg::Int32>(WormTopics::BoardInfo, WormConstants::GRID_MESSAGE_QUEUE_LENGTH);
-      boardInfo_timer_ = this->create_wall_timer(WormConstants::TICK_TIME, std::bind(&WormGridNode::BoardInfoPublishCallback, this));
-
-      playerInput_subscription_ = this->create_subscription<std_msgs::msg::String>(
-        WormTopics::PlayerInput, WormConstants::GRID_MESSAGE_QUEUE_LENGTH, std::bind(&WormGridNode::PlayerInputCallback, this, _1));
-    }
+    WormGridNode();  // Constructor
 
   private:
+    // publishers
+    rclcpp::Publisher<std_msgs::msg::Int32> gameId_publisher_;
+    rclcpp::Publisher<ros2_worm_multiplayer::msg::Board> boardInfo_publisher_;
+
+    // subscribers
+    rclcpp::Subscription<ros2_worm_multiplayer::msg::Direction> playerInput_subscription_;
+
+    // timer for generating time ticks
+    rclcpp::WallTimer tick_timer_;
+
     // callback methods for publishing
-    void GameIdPublishCallback() {}
-    void BoardInfoPublishCallback() {}
+    void GameIdPublishCallback();
+    void BoardInfoPublishCallback();
 
     // callback methods for subscribing
-    void PlayerInputCallback() {}
+    void PlayerInputCallback();
 
+    // method combining all the routines to be run in 1 tick
+    void RunTick() {
+      BoardInfoPublishCallback;
+      GameIdPublishCallback();
+    }
 };
+
+/**
+ * @brief Construct the Node and initialize instance members.
+*/
+WormGridNode::WormGridNode() : Node("worm_grid_node") {
+  gameId_publisher_ = this->create_publisher<std_msgs::msg::Int32>(WormTopics::GameStart, WormConstants::GRID_MESSAGE_QUEUE_LENGTH);
+  boardInfo_publisher_ = this->create_publisher<std_msgs::msg::Int32>(WormTopics::BoardInfo, WormConstants::GRID_MESSAGE_QUEUE_LENGTH);
+
+  tick_timer_ = this->create_wall_timer(
+    WormConstants::TICK_TIME,
+    std::bind(
+      &WormGridNode::RunTick, 
+      this
+    )
+  );
+
+  playerInput_subscription_ = this->create_subscription<std_msgs::msg::String>(
+    WormTopics::PlayerInput, WormConstants::GRID_MESSAGE_QUEUE_LENGTH, std::bind(&WormGridNode::PlayerInputCallback, this, _1));
+}
 
 int main(int argc, char ** argv)
 {
