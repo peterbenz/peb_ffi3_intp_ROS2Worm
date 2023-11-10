@@ -20,6 +20,12 @@ class WormGridNode : public rclcpp::Node {
   public:
     WormGridNode();  // Constructor
 
+    enum GameState {
+      LOBBY,
+      GAME,
+      ENDED
+    };
+
   private:
     // publishers
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr gameId_publisher_;
