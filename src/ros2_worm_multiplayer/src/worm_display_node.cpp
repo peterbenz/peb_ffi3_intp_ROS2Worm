@@ -1,6 +1,7 @@
 #include <memory>
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
+#include "ros2_worm_multiplayer/msg/board.hpp"
 
 
 extern "C" 
@@ -11,19 +12,20 @@ extern "C"
 }
 
 
+
 using std::placeholders::_1;
 class Display : public rclcpp::Node
 {
     public:
         Display() : Node("display")
         {
-            subscription_ = this->create_subscription<std_msgs::msg::String>("topic", 10, std::bind(&Display::refreshD, this, _1));
+            subscription_ = this->create_subscription<ros2_worm_multiplayer::msg::Board>("Board", 10, std::bind(&Display::refreshD, this, _1));
             startup();
         }
 
     private:
 
-        rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
+        rclcpp::Subscription<ros2_worm_multiplayer::msg::Board>::SharedPtr subscription_;
         struct board theboard;
         int startup()
         {
@@ -41,22 +43,28 @@ class Display : public rclcpp::Node
           cleanupCursesApp();
           return 0;
         }
-        void refreshD(const std_msgs::msg::String& msg)
+        void refreshD(const ros2_worm_multiplayer::msg::Board& msg)
         {
           //todo
 
-
-          //testing:
-          RCLCPP_INFO(this->get_logger(), "I heard: '%s'", msg.data.c_str());
-
-          for (int y = 0; y <= MIN_NUMBER_OF_ROWS ; y++)
+          int y = 0;
+          for(auto &row : msg.board)
           {
-            for (int x = 0; x <= MIN_NUMBER_OF_COLS ; x++)
+            y++;
+            int x = 0;
+            for(auto &element : row.row)
             {
-              placeItem(&theboard,y,x,BC_FOOD_2,SYMBOL_BARRIER,COLP_BARRIER);
+              int32_t color = element.color;
+              ColorPairs colorPair = static_cast<ColorPairs>(color);
+              char item = element.zeichen;
+
+              BoardCodes boardCode = static_cast<BoardCodes>(boardCode);
+              placeItem(&theboard, y, x, boardCode, item, colorPair); //color 0-256?, boardcord = 0 -> keine funktion
+              x++;
             }
           }
-        
+
+
           // Display all the updates through lncurses
           refresh();
         }

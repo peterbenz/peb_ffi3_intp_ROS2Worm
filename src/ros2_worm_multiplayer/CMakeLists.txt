@@ -73,6 +73,7 @@ rosidl_get_typesupport_target(cpp_typesupport_target
 # add your nodes here that require custom msg types
 target_link_libraries(worm_navigation_node "${cpp_typesupport_target}")
 target_link_libraries(worm_grid_node "${cpp_typesupport_target}")
+target_link_libraries(worm_display_node "${cpp_typesupport_target}")
 
 # add your nodes here that require ncurses
 target_link_libraries(worm_display_node ncurses)
