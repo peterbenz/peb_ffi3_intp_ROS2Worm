@@ -17,7 +17,7 @@ using std::placeholders::_1;
 class Display : public rclcpp::Node
 {
     public:
-        Display() : Node("display")
+        Display() : Node("display_node")
         {
             subscription_ = this->create_subscription<ros2_worm_multiplayer::msg::Board>("Board", 10, std::bind(&Display::refreshD, this, _1));
             startup();
@@ -58,7 +58,7 @@ class Display : public rclcpp::Node
               ColorPairs colorPair = static_cast<ColorPairs>(color);
               char item = element.zeichen;
 
-              BoardCodes boardCode = static_cast<BoardCodes>(boardCode);
+              BoardCodes boardCode = static_cast<BoardCodes>(0);
               placeItem(&theboard, y, x, boardCode, item, colorPair); //color 0-256?, boardcord = 0 -> keine funktion
               x++;
             }
