@@ -43,6 +43,11 @@ class WormGridNode : public rclcpp::Node {
     // timer for generating time ticks
     rclcpp::WallTimer tick_timer_;
 
+    // methods to implement gameplay
+    void startLobby();
+    void startGame();
+    void endGame();
+
     // callback methods for publishing
     void GameIdPublishCallback();
     void BoardInfoPublishCallback();
@@ -52,7 +57,7 @@ class WormGridNode : public rclcpp::Node {
 
     // method combining all the routines to be run in 1 tick
     void RunTick() {
-      BoardInfoPublishCallback;
+      BoardInfoPublishCallback();
       GameIdPublishCallback();
     }
 };
