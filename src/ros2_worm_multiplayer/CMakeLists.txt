@@ -15,6 +15,15 @@ find_package(std_msgs REQUIRED) # only needed for testing purposes - mario
 find_package(rosidl_default_generators REQUIRED) # testing - Joschie
 find_package(ros2_worm_multiplayer REQUIRED)
 
+# Messages - Peter
+rosidl_generate_interfaces(${PROJECT_NAME}
+	"msg/PlayerInput.msg"
+	"msg/Board.msg"
+	"msg/Row.msg"
+	"msg/Element.msg"
+	"msg/Direction.msg"
+)
+
 # Display Node
 add_executable(worm_display_node
 	src/worm_display_node.cpp
@@ -32,14 +41,6 @@ add_executable(worm_navigation_node
 )
 ament_target_dependencies(worm_navigation_node rclcpp ros2_worm_multiplayer)
 
-# Messages - Peter
-rosidl_generate_interfaces(${PROJECT_NAME}
-	"msg/PlayerInput.msg"
-	"msg/Board.msg"
-	"msg/Row.msg"
-	"msg/Element.msg"
-	"msg/Direction.msg"
-)
 
 #######################################
 target_include_directories(worm_display_node
