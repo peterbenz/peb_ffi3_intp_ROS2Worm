@@ -23,9 +23,14 @@ set(msg_files
   "msg/Direction.msg"
 )
 
+set(srv_files
+  "srv/JoinServer.srv"
+)
+
 # Messages - Peter
 rosidl_generate_interfaces(${PROJECT_NAME}
 	${msg_files}
+  ${srv_files}
 )
 
 # Display Node
@@ -42,8 +47,9 @@ ament_target_dependencies(worm_display_node rclcpp std_msgs)
 # Navigation Node
 add_executable(worm_navigation_node
   src/worm_navigation_node.cpp
+  src/prep.c
 )
-ament_target_dependencies(worm_navigation_node rclcpp)
+ament_target_dependencies(worm_navigation_node rclcpp std_msgs)
 
 # Grid Node
 add_executable(worm_grid_node
