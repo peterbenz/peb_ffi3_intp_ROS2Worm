@@ -1,3 +1,4 @@
 int32 srv_request
+int32 gameid
 ---
 int32 wormid
