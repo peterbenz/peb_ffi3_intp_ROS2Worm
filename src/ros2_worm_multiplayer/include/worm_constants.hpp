@@ -10,6 +10,11 @@ namespace WormConstants
 {
   constexpr std::chrono::milliseconds TICK_TIME{100};
   constexpr const int GRID_MESSAGE_QUEUE_LENGTH = 10;
+
+  enum ServiceRequests {
+    SRV_JOIN,
+    SRV_DISCONNECT,
+  }; 
 }
 
 /* Namespace for topics used in this project */
@@ -19,4 +24,5 @@ namespace WormTopics
   constexpr const char* GameStart = "GameStart";
   constexpr const char* BoardInfo = "BoardInfo";
 }
+
 #endif
