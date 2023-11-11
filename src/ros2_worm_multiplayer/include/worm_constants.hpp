@@ -25,4 +25,10 @@ namespace WormTopics
   constexpr const char* BoardInfo = "BoardInfo";
 }
 
+/* Namespace for services used in this porject */
+namespace WormServices
+{
+  constexpr const char* JoinService = "JoinService";
+}
+
 #endif
