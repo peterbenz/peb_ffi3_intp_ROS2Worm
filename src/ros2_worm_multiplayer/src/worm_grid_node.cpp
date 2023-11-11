@@ -3,6 +3,7 @@
 // ############################################################################
 
 #include <cstdio>
+#include <ctime>
 #include <chrono>
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/int32.hpp"
@@ -33,6 +34,8 @@ class WormGridNode : public rclcpp::Node {
     };
 
     GameState currentGameState = GameState::INIT;
+
+    const int32_t gameId = std::rand();
 
   private:
     // publishers
@@ -142,6 +145,12 @@ void WormGridNode::endGame() {
  * @brief Callback method to send GameId when waiting for players.
 */
 void WormGridNode::GameIdPublishCallback() {
+  static std_msgs::msg::Int32 message = std_msgs::msg::Int32();
+  message.data = gameId;
+
+  if (currentGameState == GameState::LOBBY) {
+    gameId_publisher_->publish(message);
+  }
 
 }
 
@@ -178,6 +187,9 @@ int main(int argc, char ** argv)
   (void) argv;
 
   rclcpp::init(argc, argv);
+
+  std::srand(std::time(nullptr));
+
   rclcpp::spin(std::make_shared<WormGridNode>());
   rclcpp::shutdown();
   
