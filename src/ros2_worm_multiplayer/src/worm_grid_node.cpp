@@ -27,6 +27,8 @@ class WormGridNode : public rclcpp::Node {
       ENDED
     };
 
+    GameState currentGameState = GameState::INIT;
+
   private:
     // publishers
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr gameId_publisher_;
@@ -48,7 +50,7 @@ class WormGridNode : public rclcpp::Node {
     void BoardInfoPublishCallback();
 
     // callback methods for subscribing
-    void PlayerInputCallback(ros2_worm_multiplayer::msg::Direction::SharedPtr direction);
+    void PlayerInputCallback(const ros2_worm_multiplayer::msg::Direction::SharedPtr direction);
 
     // method combining all the routines to be run in 1 tick
     void RunTick();
