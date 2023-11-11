@@ -15,6 +15,18 @@ namespace WormConstants
     SRV_JOIN,
     SRV_DISCONNECT,
   }; 
+
+  /* Enumeration for characters to be displayed on the board */
+  typedef enum WormCharacters {
+    WORM_HEAD = '0',
+    WORM_BODY = 'o',
+    BARRIER = '#',
+    FOOD_1 = '1',
+    FOOD_2 = '2',
+    FOOD_3 = '3',
+
+    EMPTY = ' '
+  } WormCharacters;
 }
 
 /* Namespace for topics used in this project */

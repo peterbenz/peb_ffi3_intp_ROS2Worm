@@ -10,6 +10,11 @@
 #include "worm_constants.hpp"
 #include "ros2_worm_multiplayer/msg/board.hpp"
 #include "ros2_worm_multiplayer/msg/direction.hpp"
+#include "ros2_worm_multiplayer/msg/element.hpp"
+
+extern "C" {
+#include <curses.h>
+}
 
 
 // ############################################################################
@@ -39,6 +44,9 @@ class WormGridNode : public rclcpp::Node {
 
     // timer for generating time ticks
     rclcpp::TimerBase::SharedPtr tick_timer_;
+
+    // logical representation of the board
+    ros2_worm_multiplayer::msg::Board Board;
 
     // methods to implement gameplay
     void startLobby();
@@ -85,6 +93,14 @@ WormGridNode::WormGridNode() : Node("worm_grid_node") {
       std::placeholders::_1
     )
   );
+
+  // initialize board
+  for (int x = 0; x < 100; x++) {
+    for (int y = 0; y < 100; y++) {
+      Board.board[x].row[y].color = COLOR_BLACK;
+      Board.board[x].row[y].zeichen = WormConstants::WormCharacters::EMPTY;
+    }
+  }
 }
 
 /**
