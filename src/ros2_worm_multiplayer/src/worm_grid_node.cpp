@@ -95,12 +95,23 @@ WormGridNode::WormGridNode() : Node("worm_grid_node") {
   );
 
   // initialize board
-  for (int x = 0; x < 100; x++) {
-    for (int y = 0; y < 100; y++) {
-      Board.board[x].row[y].color = COLOR_BLACK;
-      Board.board[x].row[y].zeichen = WormConstants::WormCharacters::EMPTY;
+  Board = ros2_worm_multiplayer::msg::Board();
+  
+  auto boardVector = std::vector<ros2_worm_multiplayer::msg::Row>();
+  auto currentRow = std::vector<ros2_worm_multiplayer::msg::Element>();
+  auto currentElement = ros2_worm_multiplayer::msg::Element();
+  
+  for (int y = 0; y < WormConstants::BOARD_HEIGHT; y++) {
+
+    for (int x = 0; x < WormConstants::BOARD_LENGTH; x++) {
+      currentElement.set__color(COLOR_BLACK);
+      currentElement.set__zeichen(WormConstants::WormCharacters::EMPTY);
+      currentRow.push_back(currentElement);
     }
+    boardVector.push_back(ros2_worm_multiplayer::msg::Row().set__row(currentRow));
+    currentRow.clear();
   }
+  Board.set__board(boardVector);
 }
 
 /**
