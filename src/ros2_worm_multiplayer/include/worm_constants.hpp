@@ -11,10 +11,10 @@ namespace WormConstants
   constexpr std::chrono::milliseconds TICK_TIME{100};
   constexpr const int GRID_MESSAGE_QUEUE_LENGTH = 10;
 
-  enum ServiceRequests {
+  typedef enum ServiceRequests {
     SRV_JOIN,
     SRV_DISCONNECT,
-  }; 
+  } ServiceRequests; 
 
   /* Enumeration for characters to be displayed on the board */
   typedef enum WormCharacters {
