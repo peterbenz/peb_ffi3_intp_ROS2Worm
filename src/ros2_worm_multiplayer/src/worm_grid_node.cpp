@@ -21,6 +21,7 @@ class WormGridNode : public rclcpp::Node {
     WormGridNode();  // Constructor
 
     enum GameState {
+      INIT,
       LOBBY,
       GAME,
       ENDED
