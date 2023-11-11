@@ -146,7 +146,7 @@ void WormGridNode::GameIdPublishCallback() {
  * @brief Callback method to send board info each tick.
 */
 void WormGridNode::BoardInfoPublishCallback() {
-
+  boardInfo_publisher_->publish(Board);
 }
 
 /**
