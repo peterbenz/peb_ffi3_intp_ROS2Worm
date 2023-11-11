@@ -118,6 +118,7 @@ WormGridNode::WormGridNode() : Node("worm_grid_node") {
  * @brief Start the lobby for players to wait in.
 */
 void WormGridNode::startLobby() {
+  currentGameState = GameState::LOBBY;
 
 }
 
@@ -125,6 +126,7 @@ void WormGridNode::startLobby() {
  * @brief Stop the waiting lobby and start the game.
 */
 void WormGridNode::startGame() {
+  currentGameState = GameState::GAME;
 
 }
 
@@ -132,7 +134,8 @@ void WormGridNode::startGame() {
  * @brief End the game and stop the grid node.
 */
 void WormGridNode::endGame() {
-  
+  currentGameState = GameState::ENDED;
+
 }
 
 /**
