@@ -11,6 +11,10 @@ namespace WormConstants
   constexpr std::chrono::milliseconds TICK_TIME{100};
   constexpr const int GRID_MESSAGE_QUEUE_LENGTH = 10;
 
+  /* Size of board */
+  constexpr const int BOARD_HEIGHT = 100;
+  constexpr const int BOARD_LENGTH = 100;
+
   typedef enum ServiceRequests {
     SRV_JOIN,
     SRV_DISCONNECT,
