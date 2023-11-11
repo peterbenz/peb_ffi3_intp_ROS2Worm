@@ -20,6 +20,9 @@ namespace WormConstants
     SRV_DISCONNECT,
   } ServiceRequests; 
 
+  /* Invalid WormId to check for in join requests. */
+  constexpr const int INVALID_WORM_ID = -1;
+
   /* Enumeration for characters to be displayed on the board */
   typedef enum WormCharacters {
     WORM_HEAD = '0',

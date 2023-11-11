@@ -13,6 +13,8 @@
 #include "ros2_worm_multiplayer/msg/direction.hpp"
 #include "ros2_worm_multiplayer/msg/element.hpp"
 
+#include "ros2_worm_multiplayer/srv/join_server.hpp"
+
 extern "C" {
 #include <curses.h>
 }
@@ -36,6 +38,12 @@ class WormGridNode : public rclcpp::Node {
     GameState currentGameState = GameState::INIT;
 
     const int32_t gameId = std::rand();
+
+    void handleJoin(
+      const std::shared_ptr<ros2_worm_multiplayer::srv::JoinServer::Request> request,
+      std::shared_ptr<ros2_worm_multiplayer::srv::JoinServer::Response> response
+    );
+    std::vector<int32_t> joinedPlayers;
 
   private:
     // publishers
@@ -115,6 +123,9 @@ WormGridNode::WormGridNode() : Node("worm_grid_node") {
     currentRow.clear();
   }
   Board.set__board(boardVector);
+
+  // initialize player list
+  joinedPlayers = std::vector<int32_t>();
 }
 
 /**
@@ -176,6 +187,41 @@ void WormGridNode::RunTick() {
   GameIdPublishCallback();
 }
 
+/**
+ * @brief Handle joins and disconnects through the JoinServer service.
+*/
+void WormGridNode::handleJoin(
+  const std::shared_ptr<ros2_worm_multiplayer::srv::JoinServer::Request> request,
+  std::shared_ptr<ros2_worm_multiplayer::srv::JoinServer::Response> response
+) {
+  // Only allow joining when GameState is LOBBY
+  if (currentGameState != GameState::LOBBY) {
+    response->set__wormid(WormConstants::INVALID_WORM_ID);
+  }
+
+  // Handle joining
+  if (request->srv_request == WormConstants::ServiceRequests::SRV_JOIN) {
+    int32_t newWormId = std::rand();
+    while (std::find(joinedPlayers.begin(), joinedPlayers.end(), newWormId) != joinedPlayers.end()) {
+      // Increment newWormId until it is unique
+      newWormId++;
+    }
+    RCLCPP_INFO(this->get_logger(), "Player joined. Given ID: %d", newWormId);
+    response->set__wormid(newWormId);
+
+  // Handle disconnecting
+  } else if (request->srv_request == WormConstants::ServiceRequests::SRV_DISCONNECT) {
+    RCLCPP_INFO(this->get_logger(), "Player %d left.", request->wormid);
+    
+    joinedPlayers.erase(
+      std::remove(joinedPlayers.begin(), joinedPlayers.end(), request->wormid),
+      joinedPlayers.end()
+    );
+
+    response->set__wormid(WormConstants::INVALID_WORM_ID);
+  }
+}
+
 
 // ############################################################################
 // MAIN
@@ -190,7 +236,17 @@ int main(int argc, char ** argv)
 
   std::srand(std::time(nullptr));
 
-  rclcpp::spin(std::make_shared<WormGridNode>());
+  // construct node
+  auto worm_grid_node = std::make_shared<WormGridNode>();
+
+  // initialize join service
+  /*
+  rclcpp::Service<ros2_worm_multiplayer::srv::JoinServer>::SharedPtr join_service = worm_grid_node->create_service<ros2_worm_multiplayer::srv::JoinServer>(
+    WormServices::JoinService,
+    &WormGridNode::handleJoin
+  );
+  */
+  rclcpp::spin(worm_grid_node);
   rclcpp::shutdown();
   
   return 0;
