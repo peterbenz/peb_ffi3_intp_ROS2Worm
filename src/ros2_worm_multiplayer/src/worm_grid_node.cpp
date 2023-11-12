@@ -151,7 +151,7 @@ WormGridNode::WormGridNode() : Node("worm_grid_node") {
 }
 
 /**
- * @brief Start the lobby for players to wait in.
+ * @brief Lobby for players to wait in.
 */
 void WormGridNode::runLobby() {
   if (joinedPlayers.size() < WormConstants::MAX_PLAYERS) {
@@ -162,7 +162,7 @@ void WormGridNode::runLobby() {
 }
 
 /**
- * @brief Stop the waiting lobby and start the game.
+ * @brief Run the logic of the game.
 */
 void WormGridNode::runGame() {
 
