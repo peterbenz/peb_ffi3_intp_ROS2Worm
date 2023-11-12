@@ -53,6 +53,9 @@ class WormGridNode : public rclcpp::Node {
     // subscribers
     rclcpp::Subscription<ros2_worm_multiplayer::msg::Direction>::SharedPtr playerInput_subscription_;
 
+    // services
+    rclcpp::Service<ros2_worm_multiplayer::srv::JoinServer>::SharedPtr join_service_;
+
     // timer for generating time ticks
     rclcpp::TimerBase::SharedPtr tick_timer_;
 
@@ -87,6 +90,7 @@ WormGridNode::WormGridNode() : Node("worm_grid_node") {
   gameId_publisher_ = this->create_publisher<std_msgs::msg::Int32>(WormTopics::GameStart, WormConstants::GRID_MESSAGE_QUEUE_LENGTH);
   boardInfo_publisher_ = this->create_publisher<ros2_worm_multiplayer::msg::Board>(WormTopics::BoardInfo, WormConstants::GRID_MESSAGE_QUEUE_LENGTH);
 
+  // initialize tick timer
   tick_timer_ = this->create_wall_timer(
     WormConstants::TICK_TIME,
     std::bind(
@@ -95,6 +99,7 @@ WormGridNode::WormGridNode() : Node("worm_grid_node") {
     )
   );
 
+  // initialize player input subscription 
   playerInput_subscription_ = this->create_subscription<ros2_worm_multiplayer::msg::Direction>(
     WormTopics::PlayerInput, 
     WormConstants::GRID_MESSAGE_QUEUE_LENGTH, 
@@ -102,6 +107,17 @@ WormGridNode::WormGridNode() : Node("worm_grid_node") {
       &WormGridNode::PlayerInputCallback,
       this,
       std::placeholders::_1
+    )
+  );
+
+  // initialize join service server
+  rclcpp::Service<ros2_worm_multiplayer::srv::JoinServer>::SharedPtr join_service_ = this->create_service<ros2_worm_multiplayer::srv::JoinServer>(
+    WormServices::JoinService,
+    std::bind(
+      &WormGridNode::handleJoin,
+      this,
+      std::placeholders::_1,
+      std::placeholders::_2
     )
   );
 
@@ -126,6 +142,9 @@ WormGridNode::WormGridNode() : Node("worm_grid_node") {
 
   // initialize player list
   joinedPlayers = std::vector<int32_t>();
+
+  // send message of server starting to console
+  RCLCPP_INFO(this->get_logger(), "Worm Grid Node started! GameId: %d", gameId);
 }
 
 /**
@@ -235,18 +254,8 @@ int main(int argc, char ** argv)
   rclcpp::init(argc, argv);
 
   std::srand(std::time(nullptr));
-
-  // construct node
-  auto worm_grid_node = std::make_shared<WormGridNode>();
-
-  // initialize join service
-  /*
-  rclcpp::Service<ros2_worm_multiplayer::srv::JoinServer>::SharedPtr join_service = worm_grid_node->create_service<ros2_worm_multiplayer::srv::JoinServer>(
-    WormServices::JoinService,
-    &WormGridNode::handleJoin
-  );
-  */
-  rclcpp::spin(worm_grid_node);
+  
+  rclcpp::spin(std::make_shared<WormGridNode>());
   rclcpp::shutdown();
   
   return 0;
