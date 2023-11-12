@@ -1,12 +1,15 @@
 #include <cstdio>
 #include <curses.h>
 #include <cinttypes>
+#include <string>
+#include <iostream>
 #include <vector>
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/int32.hpp"
 #include "ros2_worm_multiplayer/msg/player_input.hpp"
 #include "ros2_worm_multiplayer/srv/join_server.hpp"
 #include "worm_constants.hpp"
+#include "worm.h"
 
 extern "C" {
 #include "prep.h"
@@ -19,6 +22,7 @@ class Navigation : public rclcpp::Node
 {
 	public:
 		Navigation();
+		resCode_t start_gamelobby();
 
 	private:
 		/* */
@@ -29,6 +33,9 @@ class Navigation : public rclcpp::Node
 
 		/* */
 		void gamelobby();
+		
+		/* helper methods */
+		void add_gameserver(const std_msgs::msg::Int32& msg);
 
 		/* Game Server IDs */
 		std::vector<int> game_ids_;
@@ -55,7 +62,7 @@ class Navigation : public rclcpp::Node
  * @brief Initialize navigation node 
 */
 Navigation::Navigation()
-: Node("navigation_node")
+: Node("navigation_node"), cur_game_id{-1}
 {
 	/* NCurses Init */
 	initializeCursesApplication();
@@ -65,10 +72,10 @@ Navigation::Navigation()
 		WormTopics::GameStart, 10, std::bind(&Navigation::gamestart_callback, this, std::placeholders::_1));
 
 	/* Create Client for join request */
-	//this->client_ = this->create_client<ros2_worm_multiplayer::srv::JoinServer>(WormServices::JoinService);
+	this->client_ = this->create_client<ros2_worm_multiplayer::srv::JoinServer>(WormServices::JoinService);
 
 	/* rclcpP::QoS(10) provides default QoS profile with history depth of 10 */
-	//this->pInput_pub = this->create_publisher<ros2_worm_multiplayer::msg::PlayerInput>(WormTopics::PlayerInput, rclcpp::QoS(10));
+	this->pInput_pub = this->create_publisher<ros2_worm_multiplayer::msg::PlayerInput>(WormTopics::PlayerInput, rclcpp::QoS(10));
 
 	/* Create a timer to check for keyboard input every 100ms */
 	// this->timer_ = create_wall_timer(WormConstants::TICK_TIME, std::bind(&Navigation::inputLoop, this));
@@ -78,28 +85,119 @@ Navigation::Navigation()
 /**
  * 
 */
-void Navigation::gamestart_callback(const std_msgs::msg::Int32& msg)
+resCode_t Navigation::start_gamelobby()
 {
-	// RCLCPP_INFO(this->get_logger(), "I found a Game with ID: '%d'", msg.data);
-	this->game_ids_.push_back(msg.data);
-	gamelobby();
+	/* gamelobby blocks until a game was selected */
+	this->gamelobby();
+
+	if (this->cur_game_id > -1)
+	{
+		/* Create the actual join request */
+		auto join_request = std::make_shared<ros2_worm_multiplayer::srv::JoinServer::Request>();
+		join_request->gameid = this->cur_game_id;
+		join_request->srv_request = WormConstants::ServiceRequests::SRV_JOIN;
+
+		/* Waiting for service to wake up */
+		while (!this->client_->wait_for_service(std::chrono::seconds(1)))
+		{
+			clear();
+			attron(COLOR_PAIR(1));
+			printw("Waiting for server...\n");
+			attroff(COLOR_PAIR(1));
+			refresh();
+		}
+
+		/* sending actual request to the service */
+		auto result = this->client_->async_send_request(join_request);
+
+		/* shared_from_this is used to obtain a shared pointer to the current node */
+		if (rclcpp::spin_until_future_complete(shared_from_this(), result) == rclcpp::FutureReturnCode::SUCCESS)
+		{
+			attron(COLOR_PAIR(1));
+			printw("Successfully joined server: %d\n playing as wormid: %d\n",this->cur_game_id, result.get()->wormid);
+			attroff(COLOR_PAIR(1));
+			refresh();
+
+			/* Store wormid for this node until the end of the game */
+			this->pInput.wormid = result.get()->wormid;
+
+			return RES_OK; 
+		} 
+		else
+		{
+			attron(COLOR_PAIR(1));
+			printw("We were not able to join this server");
+			attroff(COLOR_PAIR(1));
+			refresh();
+
+			return RES_FAILED;
+		}
+	}
+	return RES_INTERNAL_ERROR;
 }
 
+
 /**
- * 
+ * Testing
+*/
+void Navigation::gamestart_callback(const std_msgs::msg::Int32& msg)
+{
+	/* collect all gameids in a vector list */
+	this->add_gameserver(msg);
+}
+
+
+/**
+ *  
 */
 void Navigation::gamelobby()
 {
-	clear();
-	attron(COLOR_PAIR(1));
+	char input;
 
-	for (const auto& id : this->game_ids_)
+	while (this->cur_game_id < 0)
 	{
-		printw("Game available at: %d\n", id);
+		rclcpp::sleep_for(std::chrono::milliseconds(100));
+
+	  clear();
+	  attron(COLOR_PAIR(1));
+
+		if (this->game_ids_.size() > 0)
+		{
+	    printw("Game Lobby: \n");
+	    for (int i = 0; i < this->game_ids_.size(); i++)
+	    {
+	    	printw("%d - Game ID: %d\n", i, this->game_ids_.at(i));
+	    }
+
+	    move(getmaxy(stdscr) - 1, 0);
+	    printw("Chose a game to join %d - %ld: ", 0, this->game_ids_.size() - 1);
+
+		  if ((input = getch()) != ERR && isdigit(input))
+		  {
+		  	input = std::atoi(&input);
+		  	if (input < this->game_ids_.size())
+		  	{
+		  		this->cur_game_id = this->game_ids_.at(input);
+		  	}
+		  }
+		}
+
+	  attroff(COLOR_PAIR(1));
+	  refresh();
 	}
 
-	attroff(COLOR_PAIR(1));
-	refresh();
+	return;
+}
+
+/**
+ * @brief Adds a game id to the list of available game servers if it doesnt exist already
+*/
+void Navigation::add_gameserver(const std_msgs::msg::Int32& msg)
+{
+	if (std::find(this->game_ids_.begin(), this->game_ids_.end(), msg.data) == this->game_ids_.end())
+	{
+		this->game_ids_.push_back(msg.data);
+	}
 }
 
 
@@ -159,10 +257,28 @@ void Navigation::inputLoop()
 /* */
 int main(int argc, char** argv)
 {
+	resCode_t result;
+
 	rclcpp::init(argc, argv);
 
 	/* ::spin is used to enter a loop that keeps the node running */
-	rclcpp::spin(std::make_shared<Navigation>());
+	// rclcpp::spin(std::make_shared<Navigation>());
+	auto navigation_node = std::make_shared<Navigation>();
+	
+	// Start the start_gamelobby function in a separate thread
+	std::thread lobbyThread([&navigation_node]() {
+			resCode_t result = navigation_node->start_gamelobby();
+			if (result != RES_OK) {
+					std::cout << "SOME ERROR" << std::endl;
+			}
+	});
+
+	// Start the ROS 2 event loop
+	rclcpp::spin(navigation_node);
+
+	// Wait for the lobbyThread to finish before exiting the program
+	lobbyThread.join();
+
 
 	/* Reached when the node shutsdown */
 	rclcpp::shutdown();
