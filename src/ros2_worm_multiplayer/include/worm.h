@@ -12,11 +12,11 @@
 #define _WORM_H
 
 // Result codes of functions
-enum ResCodes {
+typedef enum ResCodes {
     RES_OK,
     RES_FAILED,
     RES_INTERNAL_ERROR,
-};
+} resCode_t;
 
 // Dimensions and bounds
 #define NAP_TIME    100   // Time in milliseconds to sleep between updates of display
