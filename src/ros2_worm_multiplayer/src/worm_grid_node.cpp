@@ -95,6 +95,11 @@ WormGridNode::WormGridNode() : Node("worm_grid_node") {
   gameId_publisher_ = this->create_publisher<std_msgs::msg::Int32>(WormTopics::GameStart, WormConstants::GRID_MESSAGE_QUEUE_LENGTH);
   boardInfo_publisher_ = this->create_publisher<ros2_worm_multiplayer::msg::Board>(WormTopics::BoardInfo, WormConstants::GRID_MESSAGE_QUEUE_LENGTH);
 
+  // initialize callback groups
+  callback_group_timers_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  callback_group_subscriptions_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  callback_group_services_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+
   // initialize tick timer
   tick_timer_ = this->create_wall_timer(
     WormConstants::TICK_TIME,
@@ -131,11 +136,6 @@ WormGridNode::WormGridNode() : Node("worm_grid_node") {
     rmw_qos_profile_default,
     callback_group_services_
   );
-
-  // initialize callback groups
-  callback_group_timers_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-  callback_group_subscriptions_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-  callback_group_services_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
   // initialize board
   Board = ros2_worm_multiplayer::msg::Board();
