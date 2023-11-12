@@ -56,6 +56,11 @@ class WormGridNode : public rclcpp::Node {
     // services
     rclcpp::Service<ros2_worm_multiplayer::srv::JoinServer>::SharedPtr join_service_;
 
+    // callback groups
+    rclcpp::CallbackGroup::SharedPtr callback_group_timers_;
+    rclcpp::CallbackGroup::SharedPtr callback_group_subscriptions_;
+    rclcpp::CallbackGroup::SharedPtr callback_group_services_;
+
     // timer for generating time ticks
     rclcpp::TimerBase::SharedPtr tick_timer_;
 
@@ -96,10 +101,13 @@ WormGridNode::WormGridNode() : Node("worm_grid_node") {
     std::bind(
       &WormGridNode::RunTick, 
       this
-    )
+    ),
+    callback_group_timers_
   );
 
   // initialize player input subscription 
+  auto playerInput_subOpt = rclcpp::SubscriptionOptions();
+  playerInput_subOpt.callback_group = callback_group_subscriptions_;
   playerInput_subscription_ = this->create_subscription<ros2_worm_multiplayer::msg::Direction>(
     WormTopics::PlayerInput, 
     WormConstants::GRID_MESSAGE_QUEUE_LENGTH, 
@@ -107,7 +115,8 @@ WormGridNode::WormGridNode() : Node("worm_grid_node") {
       &WormGridNode::PlayerInputCallback,
       this,
       std::placeholders::_1
-    )
+    ),
+    playerInput_subOpt
   );
 
   // initialize join service server
@@ -118,8 +127,15 @@ WormGridNode::WormGridNode() : Node("worm_grid_node") {
       this,
       std::placeholders::_1,
       std::placeholders::_2
-    )
+    ),
+    rmw_qos_profile_default,
+    callback_group_services_
   );
+
+  // initialize callback groups
+  callback_group_timers_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  callback_group_subscriptions_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  callback_group_services_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
   // initialize board
   Board = ros2_worm_multiplayer::msg::Board();
@@ -272,10 +288,12 @@ int main(int argc, char ** argv)
   (void) argv;
 
   rclcpp::init(argc, argv);
-
   std::srand(std::time(nullptr));
+
+  rclcpp::executors::MultiThreadedExecutor executor;
+  auto worm_grid_node = std::make_shared<WormGridNode>();
   
-  rclcpp::spin(std::make_shared<WormGridNode>());
+  executor.spin();
   rclcpp::shutdown();
   
   return 0;
