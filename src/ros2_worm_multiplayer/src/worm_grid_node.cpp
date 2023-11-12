@@ -63,8 +63,8 @@ class WormGridNode : public rclcpp::Node {
     ros2_worm_multiplayer::msg::Board Board;
 
     // methods to implement gameplay
-    void startLobby();
-    void startGame();
+    void runLobby();
+    void runGame();
     void endGame();
 
     // callback methods for publishing
@@ -145,21 +145,26 @@ WormGridNode::WormGridNode() : Node("worm_grid_node") {
 
   // send message of server starting to console
   RCLCPP_INFO(this->get_logger(), "Worm Grid Node started! GameId: %d", gameId);
+
+  // start the lobby
+  currentGameState = GameState::LOBBY;
 }
 
 /**
  * @brief Start the lobby for players to wait in.
 */
-void WormGridNode::startLobby() {
-  currentGameState = GameState::LOBBY;
-
+void WormGridNode::runLobby() {
+  if (joinedPlayers.size() < WormConstants::MAX_PLAYERS) {
+    GameIdPublishCallback();
+  } else {
+    currentGameState = GameState::GAME;
+  }
 }
 
 /**
  * @brief Stop the waiting lobby and start the game.
 */
-void WormGridNode::startGame() {
-  currentGameState = GameState::GAME;
+void WormGridNode::runGame() {
 
 }
 
@@ -167,7 +172,6 @@ void WormGridNode::startGame() {
  * @brief End the game and stop the grid node.
 */
 void WormGridNode::endGame() {
-  currentGameState = GameState::ENDED;
 
 }
 
@@ -178,10 +182,8 @@ void WormGridNode::GameIdPublishCallback() {
   static std_msgs::msg::Int32 message = std_msgs::msg::Int32();
   message.data = gameId;
 
-  if (currentGameState == GameState::LOBBY) {
-    gameId_publisher_->publish(message);
-  }
-
+  gameId_publisher_->publish(message);
+  RCLCPP_INFO(this->get_logger(), "Publishing GameId %d!", gameId);
 }
 
 /**
@@ -203,7 +205,24 @@ void WormGridNode::PlayerInputCallback(ros2_worm_multiplayer::msg::Direction::Sh
 */
 void WormGridNode::RunTick() {
   BoardInfoPublishCallback();
-  GameIdPublishCallback();
+  
+  // run the tick according to GameState
+  switch (currentGameState) {
+  case GameState::LOBBY:
+    runLobby();
+    break;
+
+  case GameState::GAME:
+    runGame();
+    break;
+  
+  case GameState::ENDED:
+    endGame();
+    break;
+  
+  default:
+    break;
+  }
 }
 
 /**
@@ -213,13 +232,14 @@ void WormGridNode::handleJoin(
   const std::shared_ptr<ros2_worm_multiplayer::srv::JoinServer::Request> request,
   std::shared_ptr<ros2_worm_multiplayer::srv::JoinServer::Response> response
 ) {
-  // Only allow joining when GameState is LOBBY
-  if (currentGameState != GameState::LOBBY) {
-    response->set__wormid(WormConstants::INVALID_WORM_ID);
-  }
-
   // Handle joining
   if (request->srv_request == WormConstants::ServiceRequests::SRV_JOIN) {
+    // Only allow joining when GameState is LOBBY
+    if (currentGameState != GameState::LOBBY) {
+      response->set__wormid(WormConstants::INVALID_WORM_ID);
+      return;
+    }
+
     int32_t newWormId = std::rand();
     while (std::find(joinedPlayers.begin(), joinedPlayers.end(), newWormId) != joinedPlayers.end()) {
       // Increment newWormId until it is unique
