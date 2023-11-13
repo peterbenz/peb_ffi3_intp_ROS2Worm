@@ -15,4 +15,4 @@ publishes to the following topics:
 
 subscribes to the following topics:
 
-- PlayerInput  -- using Message Type: ros2_worm_multiplayer::msg::Direction  
+- PlayerInput  -- using Message Type: ros2_worm_multiplayer::msg::PlayerInput  
