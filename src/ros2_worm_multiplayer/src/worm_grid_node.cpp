@@ -239,6 +239,7 @@ void WormGridNode::handleJoin(
     // Only allow joining when GameState is LOBBY
     if (currentGameState != GameState::LOBBY) {
       response->set__wormid(WormConstants::INVALID_WORM_ID);
+      RCLCPP_INFO(this->get_logger(), "Player was not allowed to join. Lobby full.");
       return;
     }
 
