@@ -46,6 +46,11 @@ class WormGridNode : public rclcpp::Node {
     std::vector<int32_t> joinedPlayers;
 
   private:
+    // callback groups
+    rclcpp::CallbackGroup::SharedPtr timer_cbg_;
+    rclcpp::CallbackGroup::SharedPtr playerInput_cbg_;
+    rclcpp::CallbackGroup::SharedPtr joinService_cbg_;
+
     // publishers
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr gameId_publisher_;
     rclcpp::Publisher<ros2_worm_multiplayer::msg::Board>::SharedPtr boardInfo_publisher_;
@@ -93,15 +98,20 @@ WormGridNode::WormGridNode() : Node("worm_grid_node") {
   boardInfo_publisher_ = this->create_publisher<ros2_worm_multiplayer::msg::Board>(WormTopics::BoardInfo, WormConstants::GRID_MESSAGE_QUEUE_LENGTH);
 
   // initialize tick timer
+  timer_cbg_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   tick_timer_ = this->create_wall_timer(
     WormConstants::TICK_TIME,
     std::bind(
       &WormGridNode::RunTick, 
       this
-    )
+    ),
+    timer_cbg_
   );
 
   // initialize player input subscription 
+  playerInput_cbg_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  rclcpp::SubscriptionOptions playerInput_options;
+  playerInput_options.callback_group = playerInput_cbg_;
   playerInput_subscription_ = this->create_subscription<ros2_worm_multiplayer::msg::Direction>(
     WormTopics::PlayerInput, 
     WormConstants::GRID_MESSAGE_QUEUE_LENGTH, 
@@ -109,10 +119,12 @@ WormGridNode::WormGridNode() : Node("worm_grid_node") {
       &WormGridNode::PlayerInputCallback,
       this,
       std::placeholders::_1
-    )
+    ),
+    playerInput_options
   );
 
   // initialize join service server
+  joinService_cbg_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   rclcpp::Service<ros2_worm_multiplayer::srv::JoinServer>::SharedPtr joinService_ = this->create_service<ros2_worm_multiplayer::srv::JoinServer>(
     WormServices::JoinService,
     std::bind(
@@ -120,7 +132,9 @@ WormGridNode::WormGridNode() : Node("worm_grid_node") {
       this,
       std::placeholders::_1,
       std::placeholders::_2
-    )
+    ),
+    rmw_qos_profile_services_default,
+    joinService_cbg_
   );
 
   // initialize board
@@ -278,7 +292,7 @@ int main(int argc, char ** argv)
 
   std::srand(std::time(nullptr));
 
-  rclcpp::executors::SingleThreadedExecutor executor;
+  rclcpp::executors::MultiThreadedExecutor executor;
   auto worm_grid_node = std::make_shared<WormGridNode>();
   executor.add_node(worm_grid_node);
   executor.spin();
