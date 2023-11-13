@@ -127,7 +127,7 @@ WormGridNode::WormGridNode() : Node("worm_grid_node") {
 
   // initialize join service server
   joinService_cbg_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-  rclcpp::Service<ros2_worm_multiplayer::srv::JoinServer>::SharedPtr joinService_ = this->create_service<ros2_worm_multiplayer::srv::JoinServer>(
+  joinService_ = this->create_service<ros2_worm_multiplayer::srv::JoinServer>(
     WormServices::JoinService,
     std::bind(
       &WormGridNode::handleJoin,
