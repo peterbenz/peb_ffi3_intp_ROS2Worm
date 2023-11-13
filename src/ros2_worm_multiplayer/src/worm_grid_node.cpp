@@ -59,7 +59,7 @@ class WormGridNode : public rclcpp::Node {
 
     // subscribers
     std::thread playerInput_thread;
-    rclcpp::Subscription<ros2_worm_multiplayer::msg::Direction>::SharedPtr playerInput_subscription_;
+    rclcpp::Subscription<ros2_worm_multiplayer::msg::PlayerInput>::SharedPtr playerInput_subscription_;
 
     // services
     
@@ -114,7 +114,7 @@ WormGridNode::WormGridNode() : Node("worm_grid_node") {
   playerInput_cbg_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   rclcpp::SubscriptionOptions playerInput_options;
   playerInput_options.callback_group = playerInput_cbg_;
-  playerInput_subscription_ = this->create_subscription<ros2_worm_multiplayer::msg::Direction>(
+  playerInput_subscription_ = this->create_subscription<ros2_worm_multiplayer::msg::PlayerInput>(
     WormTopics::PlayerInput, 
     WormConstants::GRID_MESSAGE_QUEUE_LENGTH, 
     std::bind(
