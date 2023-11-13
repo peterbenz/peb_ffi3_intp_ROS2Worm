@@ -12,8 +12,8 @@ namespace WormConstants
   constexpr const int GRID_MESSAGE_QUEUE_LENGTH = 10;
 
   /* Size of board */
-  constexpr const int BOARD_HEIGHT = 100;
-  constexpr const int BOARD_LENGTH = 100;
+  constexpr const int BOARD_HEIGHT = 40;
+  constexpr const int BOARD_LENGTH = 80;
 
   /* Constants concerning limits of the game*/
   constexpr const int MAX_PLAYERS = 1;
