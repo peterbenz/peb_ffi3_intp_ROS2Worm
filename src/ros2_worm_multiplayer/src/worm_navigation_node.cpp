@@ -95,6 +95,7 @@ resCode_t Navigation::start_gamelobby()
 		/* Create the actual join request */
 		auto join_request = std::make_shared<ros2_worm_multiplayer::srv::JoinServer::Request>();
 		join_request->gameid = this->cur_game_id;
+		join_request->wormid = WormConstants::INVALID_WORM_ID;
 		join_request->srv_request = WormConstants::ServiceRequests::SRV_JOIN;
 
 		/* Waiting for service to wake up */
