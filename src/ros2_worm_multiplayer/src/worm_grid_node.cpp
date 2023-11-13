@@ -10,8 +10,10 @@
 
 #include "worm_constants.hpp"
 #include "ros2_worm_multiplayer/msg/board.hpp"
-#include "ros2_worm_multiplayer/msg/direction.hpp"
+#include "ros2_worm_multiplayer/msg/row.hpp"
 #include "ros2_worm_multiplayer/msg/element.hpp"
+#include "ros2_worm_multiplayer/msg/player_input.hpp"
+#include "ros2_worm_multiplayer/msg/direction.hpp"
 
 #include "ros2_worm_multiplayer/srv/join_server.hpp"
 
@@ -79,7 +81,7 @@ class WormGridNode : public rclcpp::Node {
     void BoardInfoPublishCallback();
 
     // callback methods for subscribing
-    void PlayerInputCallback(const ros2_worm_multiplayer::msg::Direction::SharedPtr direction);
+    void PlayerInputCallback(const ros2_worm_multiplayer::msg::PlayerInput input);
 
     // method combining all the routines to be run in 1 tick
     void RunTick();
@@ -212,7 +214,8 @@ void WormGridNode::BoardInfoPublishCallback() {
 /**
  * @brief Callback method to process player inputs.
 */
-void WormGridNode::PlayerInputCallback(ros2_worm_multiplayer::msg::Direction::SharedPtr direction) {
+void WormGridNode::PlayerInputCallback(const ros2_worm_multiplayer::msg::PlayerInput input) {
+  RCLCPP_INFO(this->get_logger(), "Player %d: Received input (%d/%d).", input.wormid, input.dir.dx, input.dir.dy);
 
 }
 
