@@ -55,6 +55,10 @@ class Navigation : public rclcpp::Node
 
 		/* Join Service Client */
 		rclcpp::Client<ros2_worm_multiplayer::srv::JoinServer>::SharedPtr client_;  
+
+		/* Callback Groups */
+		rclcpp::CallbackGroup::SharedPtr client_cb_group_;
+		rclcpp::CallbackGroup::SharedPtr sub_cb_group_;
 };
 
 
@@ -67,18 +71,24 @@ Navigation::Navigation()
 	/* NCurses Init */
 	initializeCursesApplication();
 
+	this->client_cb_group_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+	this->sub_cb_group_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+
 	/* Create Subscriber for GameStart waiting for a gameid to join */
+	rclcpp::SubscriptionOptions sub_options;
+	sub_options.callback_group = this->sub_cb_group_;
 	this->gamestart_sub_ = this->create_subscription<std_msgs::msg::Int32>(
-		WormTopics::GameStart, 10, std::bind(&Navigation::gamestart_callback, this, std::placeholders::_1));
+		WormTopics::GameStart, 10, std::bind(&Navigation::gamestart_callback, this, std::placeholders::_1), sub_options);
 
 	/* Create Client for join request */
-	this->client_ = this->create_client<ros2_worm_multiplayer::srv::JoinServer>(WormServices::JoinService);
+	this->client_ = this->create_client<ros2_worm_multiplayer::srv::JoinServer>(WormServices::JoinService,
+		rmw_qos_profile_services_default, this->client_cb_group_);
 
 	/* rclcpP::QoS(10) provides default QoS profile with history depth of 10 */
-	this->pInput_pub = this->create_publisher<ros2_worm_multiplayer::msg::PlayerInput>(WormTopics::PlayerInput, rclcpp::QoS(10));
+	//this->pInput_pub = this->create_publisher<ros2_worm_multiplayer::msg::PlayerInput>(WormTopics::PlayerInput, rclcpp::QoS(10));
 
 	/* Create a timer to check for keyboard input every 100ms */
-	// this->timer_ = create_wall_timer(WormConstants::TICK_TIME, std::bind(&Navigation::inputLoop, this));
+	this->timer_ = create_wall_timer(WormConstants::TICK_TIME, std::bind(&Navigation::start_gamelobby, this));
 }
 
 
@@ -258,30 +268,16 @@ void Navigation::inputLoop()
 /* */
 int main(int argc, char** argv)
 {
-	resCode_t result;
-
 	rclcpp::init(argc, argv);
 
 	/* ::spin is used to enter a loop that keeps the node running */
-	// rclcpp::spin(std::make_shared<Navigation>());
 	auto navigation_node = std::make_shared<Navigation>();
-	
-	// Start the start_gamelobby function in a separate thread
-	std::thread lobbyThread([&navigation_node]() {
-			resCode_t result = navigation_node->start_gamelobby();
-			if (result != RES_OK) {
-					std::cout << "SOME ERROR" << std::endl;
-			}
-	});
 
-	// Start the ROS 2 event loop
-	rclcpp::spin(navigation_node);
+	rclcpp::executors::MultiThreadedExecutor executor;
+	executor.add_node(navigation_node);
 
-	// Wait for the lobbyThread to finish before exiting the program
-	lobbyThread.join();
+	executor.spin();
 
-
-	/* Reached when the node shutsdown */
 	rclcpp::shutdown();
 
 	return 0;
