@@ -276,8 +276,12 @@ int main(int argc, char ** argv)
   rclcpp::init(argc, argv);
 
   std::srand(std::time(nullptr));
+
+  rclcpp::executors::SingleThreadedExecutor executor;
+  auto worm_grid_node = std::make_shared<WormGridNode>();
+  executor.add_node(worm_grid_node);
+  executor.spin();
   
-  rclcpp::spin(std::make_shared<WormGridNode>());
   rclcpp::shutdown();
   
   return 0;
