@@ -51,10 +51,12 @@ class WormGridNode : public rclcpp::Node {
     rclcpp::Publisher<ros2_worm_multiplayer::msg::Board>::SharedPtr boardInfo_publisher_;
 
     // subscribers
+    std::thread playerInput_thread;
     rclcpp::Subscription<ros2_worm_multiplayer::msg::Direction>::SharedPtr playerInput_subscription_;
 
     // services
-    rclcpp::Service<ros2_worm_multiplayer::srv::JoinServer>::SharedPtr join_service_;
+    
+    rclcpp::Service<ros2_worm_multiplayer::srv::JoinServer>::SharedPtr joinService_;
 
     // timer for generating time ticks
     rclcpp::TimerBase::SharedPtr tick_timer_;
@@ -111,7 +113,7 @@ WormGridNode::WormGridNode() : Node("worm_grid_node") {
   );
 
   // initialize join service server
-  rclcpp::Service<ros2_worm_multiplayer::srv::JoinServer>::SharedPtr join_service_ = this->create_service<ros2_worm_multiplayer::srv::JoinServer>(
+  rclcpp::Service<ros2_worm_multiplayer::srv::JoinServer>::SharedPtr joinService_ = this->create_service<ros2_worm_multiplayer::srv::JoinServer>(
     WormServices::JoinService,
     std::bind(
       &WormGridNode::handleJoin,
