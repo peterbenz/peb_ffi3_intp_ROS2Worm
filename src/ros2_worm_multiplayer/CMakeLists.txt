@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(ros2_worm_multiplayer)
+project(pebworm)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic -Wno-sign-compare)
@@ -57,6 +57,18 @@ add_executable(worm_grid_node
 )
 ament_target_dependencies(worm_grid_node rclcpp std_msgs)
 
+#Cheat Node
+add_executable(CheatNode
+	src/worm_cheat_node.cpp
+)
+ament_target_dependencies(CheatNode rclcpp std_msgs)
+
+find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
+target_link_libraries(CheatNode
+	Qt5::Core
+	Qt5::Widgets
+)
+
 #######################################
 target_include_directories(worm_display_node
   PUBLIC
@@ -69,6 +81,7 @@ install(TARGETS
   worm_display_node
   worm_navigation_node
   worm_grid_node
+  CheatNode
   DESTINATION lib/${PROJECT_NAME}
 )
 

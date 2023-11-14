@@ -1,4 +1,6 @@
 #include "rclcpp/rclcpp.hpp"
+#include "std_msgs/msg/int32.hpp"
+#include <string>
 #include <QApplication>
 #include <QListWidget>
 #include <QKeyEvent>
